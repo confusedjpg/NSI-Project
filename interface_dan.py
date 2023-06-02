@@ -1,13 +1,10 @@
 ##Left to do:
-# everything from the beginning, again
-# [ ] Name editing
 # [ ] Code cleaning (variable names, weird workarounds)
 # [ ] Comments (short & clear)
-# [ ] Logging
 
-import os, json, socket, threading, subprocess, winreg, typing, logging
+import os, json, socket, threading, subprocess, winreg, typing
 from time import sleep
-from random import randint
+from random import choice
 
 import tkinter as tk
 from tkinter import ttk
@@ -18,20 +15,16 @@ from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives import hashes, serialization
 
-def chooseRandomLine(filename: str) -> str:
-    """Chooses a random line in a .txt with the specified filename."""
-
-    file = open(filename, 'r', encoding='utf-8')
-    lines = file.readlines()
-    random_drawed_index = randint(0,len(lines)-1)
-
-    return lines[random_drawed_index][:-1]
-
 # choose a random name
 # its only purpose is visual identification, nothing else
-SELF_NAME = chooseRandomLine('liste_legumes.txt') + ' ' + chooseRandomLine('liste_adjectifs.txt')
-PORT = 6969
+vegetables = ['Ail', 'Artichaut', 'Asperge', 'Aubergine', 'Avocat', 'Bette', 'Betterave', 'Blette', 'Brocoli', 'Carotte', 'Catalonia', 'Céleri', 'Champignon', 'Chou-fleur', 'Choux', 'Citrouille', 'Concombre', 'Courge', 'Courgette', 'Cresson', 'Crosne', 'Dachine', 'Daikon', 'Échalote', 'Endive', 'Épinard', 'Fenouil', 'Fève', 'Flageolet', 'Giromon', 'Haricot', 'Igname', 'Kancon', 'Konbu', 'Laitue', 'Lentille', 'Mâche', 'Maïs', 'Manioc', 'Navet', 'Oignon', 'Olive', 'Oseille', 'Panais', 'Patate', 'Pâtisson', 'Petits pois', 'Poireau', 'Poivron', 'Pomme de terre', 'Potimarron', 'Potiron', 'Radis', 'Rhubarbe', 'Roquette', 'Rutabaga', 'Salade', 'Salsifi', 'Salsifis', 'Tétragone', 'Tomate', 'Topinambour', 'Udo', 'Vitelotte', 'Wakame', 'Wasabi', 'Yin Tsoï']
+adjectives = ['Abordable', 'Accessible', 'Accompli', 'Accueillant', 'Actif', 'Admirable', 'Adorable', 'Adroit', 'Affable', 'Affectueux', 'Affirmatif', 'Agréable', 'Aidant', 'Aimable', 'Aimant', 'Ambitieux', 'Amical', 'Amusant', 'Animé', 'Apaisant', 'Appliqué', 'Ardent', 'Artistique', 'Assertif', 'Assidu', 'Astucieux', 'Attachant', 'Attentif', 'Attentionné', 'Attractif', 'Audacieux', 'Authentique', 'Autonome', 'Autoritaire', 'Avenant', 'Aventureux', 'Bavard', 'Beau', 'Bienfaisant', 'Bienséant', 'Bienveillant', 'Bon', 'Brave', 'Brillant', 'Bûcheur', 'Câlin', 'Calme', 'Capable', 'Captivant', 'Chaleureux', 'Chanceux', 'Charismatique', 'Charitable', 'Charmant', 'Charmeur', 'Chouette', 'Civil', 'Clément', 'Cohérent', 'Collaborateur', 'Combatif', 'Comique', 'Communicatif', 'Compatissant', 'Compétent', 'Compétitif', 'Complaisant', 'Complice', 'Compréhensif', 'Concentré', 'Concerné', 'Conciliant', 'Confiant', 'Consciencieux', 'Conséquent', 'Constant', 'Content', 'Convaincant', 'Convenable', 'Coopératif', 'Courageux', 'Courtois', 'Créatif', 'Critique', 'Cultivé', 'Curieux', 'Débonnaire', 'Débrouillard', 'Décidé', 'Décontracté', 'Délicat', 'Détendu', 'Déterminé', 'Dévoué', 'Digne', 'Diligent', 'Diplomate', 'Direct', 'Discipliné', 'Discret', 'Disponible', 'Distingué', 'Distrayant', 'Divertissant', 'Doué', 'Doux', 'Droit', 'DrÃ´le', 'Dynamique', 'Éblouissant', 'Éclatant', 'Économe', 'Efficace', 'Égayant', 'Éloquent', 'Émouvant', 'Empathique', 'Encourageant', 'Endurant', 'Énergique', 'Engagé', 'Enjoué', 'Enthousiaste', 'Entreprenant', 'Épanoui', 'Galant', 'Humble', 'Humoristique', 'Imaginatif', 'Impliqué', 'Indulgent', 'Infatigable', 'Influent', 'Ingénieux', 'Inoubliable', 'Inspiré', 'Intègre', 'Intelligent', 'Intéressé', 'Intrépide', 'Intuitif', 'Inventif', 'Jovial', 'Joyeux', 'Judicieux', 'Juste', 'Leader', 'Libéré', 'Libre', 'Logique', 'Loyal', 'Lucide', 'Magistral', 'Malin', 'Mature', 'Méritant', 'Méthodique', 'Mignon', 'Minutieux', 'Modèle', 'Modeste', 'Moral', 'Motivé', 'Naturel', 'Noble', 'Novateur', 'Nuancé', 'Objectif', 'Obligeant', 'Observateur', 'Opiniâtre', 'Optimiste', 'Ordonné', 'Organisé', 'Original', 'Ouvert', 'Pacificateur', 'Pacifique', 'Paisible', 'Passionnant', 'Passionné', 'Patient', 'Persévérant', 'Perspicace', 'Persuasif', 'Pétillant', 'Philosophe', 'Plaisant', 'Poli', 'Polyvalent', 'Ponctuel', 'Pondéré', 'Posé', 'Positif', 'Pragmatique', 'Pratique', 'Précis', 'Présent', 'Prévenant', 'Prévoyant', 'Productif', 'Propre', 'Protecteur', 'Prudent', 'Pugnace', 'Pur', 'Raffiné', 'Raisonnable', 'Rassurant', 'Rationnel', 'Réaliste', 'Réceptif', 'Réconfortant', 'Reconnaissant', 'Réfléchi', 'Résistant', 'Résolu', 'Respectueux', 'Responsable', 'Rigoureux', 'Romantique', 'Rusé', 'Sage', 'Savant', 'Séduisant', 'Sensible', 'Serein', 'Sérieux', 'Serviable', 'Sincère', 'Sociable', 'Social', 'Soigneux', 'Solide', 'Souriant', 'Sportif', 'Stable', 'Stimulant', 'Stratège', 'Structuré', 'Studieux', 'Sympathique', 'Talentueux', 'Tempéré', 'Tenace', 'Tendre', 'Timide', 'Tolérant', 'Tranquille', 'Travaillant', 'Unique', 'Vaillant', 'Valeureux', 'Vif', 'Vigilant', 'Vigoureux', 'Vivace', 'Volontaire', 'Volubile', 'Vrai', 'Zen']
+SELF_NAME = choice(vegetables) + ' ' + choice(adjectives)
 MY_IP = socket.gethostbyname(socket.gethostname())
+PORT = 6969
+PACKET_SIZE = 1048576
+
+# will store other users detected on the network
 available_peers = {}
 
 def get_download_path() -> str:
@@ -43,22 +36,16 @@ def get_download_path() -> str:
         with winreg.OpenKey(winreg.HKEY_CURRENT_USER, sub_key) as key:
             location = winreg.QueryValueEx(key, downloads_guid)[0]
         return location
+
     else:
         return os.path.join(os.path.expanduser('~'), 'downloads')
 
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[
-        logging.FileHandler("logs.log", 'w'),
-        # uncomment next line if you need console logging
-        #logging.StreamHandler()
-    ]
-)
+usleep = lambda x: sleep(x/1000000.0)
 
-def create_popups(info: dict) -> (typing.Tuple[tk.Toplevel, ttk.Progressbar, str] | None):
-    """Handles the popups for asking the"""
+def confirm_transfer(info: dict) -> (typing.Tuple[tk.Toplevel, ttk.Progressbar, str] | None):
+    """Creates all the popups we need (confirm dialog and progressbar)."""
 
+    # check if user wants to receive the file
     confirm = askyesno(title = "Confirmation de transfert", message = f"Veux-tu recevoir '{info['name']}' ({info['size']} octets)?")
     if confirm:
         filetypes = [("Nom original: " + info["name"], "*." + info["name"].split(".")[-1]), ("All Files", "*.*")]
@@ -86,24 +73,26 @@ def create_popups(info: dict) -> (typing.Tuple[tk.Toplevel, ttk.Progressbar, str
 
             return (popup, progressbar, path)
 
+# create and configure the main window
 root = tk.Tk()
 root.title("Snapdroupe")
 SCREEN_WIDTH,SCREEN_HEIGHT = root.winfo_screenwidth(), root.winfo_screenheight()
+# window size is relative and works well
+# can be set to a fixed size if needed
 WIDTH, HEIGHT = SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2
 root.geometry(f"{WIDTH}x{HEIGHT}+{SCREEN_WIDTH//2 - WIDTH//2}+{SCREEN_HEIGHT//2 - HEIGHT//2}")
+
+# style for IPs
 ttk.Style().configure("BW.TLabel", foreground="gray")
 
+# title with name and IP, and then we create the frame which will hold the users' containers
 ttk.Label(root,text = SELF_NAME,font = ("", 20),).pack()
 ttk.Label(root,text = MY_IP,font = ("", 11),style="BW.TLabel").pack()
 
 frame = ttk.Frame(root)
-
 frame.pack(side="top", fill="both", expand=True)
 
 ttk.Sizegrip(root).pack(side="right")
-
-usleep = lambda x: sleep(x/1000000.0)
-PACKET_SIZE = 1048576
 
 def send_file(ip: str):
     file = askopenfile(mode ='rb')
@@ -145,7 +134,6 @@ def send_file(ip: str):
 def receive_file():
         """Continuous thread that will wait to receive a file, through TCP."""
         # generate the Private and Public key as we'll need it for the operation
-        logging.info("Setting up RSA encryption...")
         PADDING = padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA256()), algorithm=hashes.SHA256(),label=None)
         PRIVATE = rsa.generate_private_key(public_exponent=65537, key_size=1024,)
         PUBLIC = PRIVATE.public_key()
@@ -153,19 +141,16 @@ def receive_file():
         # the Public key has to be converted to bytes,
         # it's originally generated as an object, and we can't send that through socket
         PUBLIC = PUBLIC.public_bytes(encoding=serialization.Encoding.PEM,format=serialization.PublicFormat.SubjectPublicKeyInfo)
-        logging.info(f"Public RSA key created, it's {PUBLIC}")
         
         # same ol' TCP connection
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             sock.bind((MY_IP, PORT))
-            logging.info(f"Listening for connections as {MY_IP}:{PORT}")
             sock.listen()
             conn, addr = sock.accept()
             with conn:
-                logging.info(f"{addr} connected.")
                 # it's here where we get the file info and ask the user for confirmation
                 info = json.loads(conn.recv(1024).decode())
-                result = create_popups(info)
+                result = confirm_transfer(info)
                 if result:
                     popup, progressbar, path = result
                     # send confirmation and Public key to sender
@@ -173,13 +158,11 @@ def receive_file():
                     conn.sendall(PUBLIC)
                     KEY_DECRYPT = conn.recv(1024)
                     KEY_DECRYPT = PRIVATE.decrypt(KEY_DECRYPT, PADDING)
-                    logging.debug("Received Fernet key, file transfer can begin.")
                     
                     # the file is hidden while we're working on it
                     # this way we're making sure the user doesn't interfere
                     with open(path+"."+info["name"].split(".")[-1], "wb") as f:
                         subprocess.check_call(["attrib","+H",path])
-                        logging.debug("File is hidden.")
                         a = 0
                         while a != info["size"]:
                             data = conn.recv(PACKET_SIZE)
@@ -187,7 +170,6 @@ def receive_file():
                             # there's some progress bar sorcery in here too
                             progressbar["value"] = (a/info["size"])*80
                             f.write(data)
-                    logging.debug("File got transfered, decryption ensues.")
 
                     with open(path+"."+info["name"].split(".")[-1], "rb") as f:
                         content = f.read()
@@ -199,13 +181,10 @@ def receive_file():
                         subprocess.check_call(["attrib","-H",path])
                     progressbar["value"] += 9.99
                     popup.destroy()
-                    logging.debug("File decrypted and now visible.")
-                    logging.info("The file can now be opened.")
                 else:
                     conn.sendall(b'0')
         # restart the listening process again, as a thread
         # as it has to constantly wait for a connection,
-        logging.debug("Restart listening thread...")
         thread = threading.Thread(target=receive_file)
         thread.daemon = True
         thread.start()
