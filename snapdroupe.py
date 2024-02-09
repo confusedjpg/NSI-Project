@@ -1,7 +1,3 @@
-##Left to do:
-# [ ] Code cleaning (variable names, weird workarounds)
-# [ ] Comments (short & clear)
-
 import os, json, socket, threading, subprocess, winreg, typing
 from time import sleep
 from random import choice
