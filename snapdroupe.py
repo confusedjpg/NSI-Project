@@ -1,4 +1,4 @@
-import os, json, socket, threading, subprocess, winreg, typing
+import os, json, socket, threading, subprocess, typing
 from time import sleep
 from random import choice
 
@@ -27,6 +27,7 @@ def get_download_path() -> str:
     """Returns the default Downloads path (even those changed manually, like on a school's network)."""
 
     if os.name == 'nt':
+        import winreg
         sub_key = r'SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders'
         downloads_guid = '{374DE290-123F-4565-9164-39C4925E467B}'
         with winreg.OpenKey(winreg.HKEY_CURRENT_USER, sub_key) as key:
